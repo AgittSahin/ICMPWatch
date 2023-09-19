@@ -5,6 +5,7 @@ from scapy.all import sniff, ICMP, Ether
 from colorama import init, Fore, Style
 from scapy.utils import wrpcap
 from source.icmpdata import ICMPDatabase
+from source.icmpfiglet import icmpfiglet
 
 class PacketSniffer:
     def __init__(self, interface, verbose, timeout, filter_expr, output_file, use_db, capture_file):
@@ -104,7 +105,7 @@ class PacketSniffer:
                     f.write(f"Source MAC     : {src_mac}\n")
                     f.write(f"Destination MAC: {dst_mac}\n")
                     f.write(f"IP Version     : IPv{ip_version}\n")
-                    f.write(f"TTL            : {ttl}\n")  # TTL değerini ekle
+                    f.write(f"TTL            : {ttl}\n")  # Add TTL value
                     f.write(f"Checksum       : {icmp_checksum}\n")
                     f.write(f"Packet Size    : {packet_size} bytes\n")
                     f.write(f"Passing Time   : {timestamp}\n")
@@ -113,10 +114,10 @@ class PacketSniffer:
                     f.write(f"Echo Sequence  : {icmp_echo_sequence}\n")
                     f.write(f"{'-'*40}\n")
 
-            if self.capture_file:  # Eğer capture_file tanımlıysa .pcap dosyasına kaydet
+            if self.capture_file:  # If capture_file is used this block of code will be executed
                 self.start_capture([packet])
 
-            if self.use_db:  # Veritabanına kayıt için bu bloğu ekleyin
+            if self.use_db:  # Add this block to register into Database
                 data_to_store = (timestamp, src_ip, dst_ip, src_mac, dst_mac, f"IPv{ip_version}", ttl, icmp_checksum, str(packet_size), icmp_type_str, str(icmp_echo_identifier), str(icmp_echo_sequence), payload_hex, payload_content)
                 self.db.insert_packet(data_to_store)
 
@@ -132,7 +133,7 @@ class PacketSniffer:
         print(f"Total Bytes Received: {self.total_bytes_received} bytes")
 
     def start_sniffing(self):
-        print(f"{Fore.MAGENTA}\t\tICMP Packet Sniffer started...{Style.RESET_ALL}")
+        f"\t\t{icmpfiglet()}"
         try:
             packets = sniff(iface=self.interface, filter=self.filter_expr, timeout=self.timeout, prn=self.icmp_packet_handler)
             if self.capture_file:
@@ -145,7 +146,7 @@ class PacketSniffer:
 
 
 def main():
-    init(autoreset=True)  # colorama otomatik renk sıfırlama
+    init(autoreset=True)  # Colorama auto color reset
     parser = argparse.ArgumentParser(description="ICMP Packet Sniffer")
     parser.add_argument("-v", "--verbose", action="store_true", help="Show verbose packet details")
     parser.add_argument("-t", "--timeout", type=int, default=300, help="Sniffing timeout in seconds")
